@@ -1,0 +1,15 @@
+---
+- name: Linux - Validar espacio en disco
+  hosts: linux
+  become: true
+  gather_facts: false
+
+  tasks:
+    - name: Consultar uso de disco
+      ansible.builtin.command: df -h
+      register: resultado_disco
+      changed_when: false
+
+    - name: Mostrar uso de disco
+      ansible.builtin.debug:
+        var: resultado_disco.stdout_lines
