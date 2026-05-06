@@ -1,0 +1,11 @@
+---
+- name: Linux - Actualizar sistema operativo
+  hosts: os_linux
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Actualizar paquetes del sistema
+      ansible.builtin.dnf:
+        name: "*"
+        state: latest
