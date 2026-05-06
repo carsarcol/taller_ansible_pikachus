@@ -1,6 +1,6 @@
 ---
 - name: Linux - Validar espacio en disco
-  hosts: all
+  hosts: os_linux
   become: true
   gather_facts: false
 
