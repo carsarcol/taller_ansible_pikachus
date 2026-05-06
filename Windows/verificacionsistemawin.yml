@@ -1,0 +1,65 @@
+---
+- name: Verificaciones y configuracion en servidores Windows
+  hosts: all
+  gather_facts: yes
+  vars:
+    usuario_ansible: ansible
+    servicios_criticos:
+      - Spooler
+      - W32Time
+      - WinRM
+
+  tasks:
+
+    - name: Mostrar version del sistema operativo
+      debug:
+        msg: "Sistema operativo: {{ ansible_distribution }} {{ ansible_distribution_version }}"
+
+    - name: Verificar uso de CPU
+      ansible.windows.win_shell: |
+        Get-Counter '\Processor(_Total)\% Processor Time'
+      register: cpu_usage
+
+    - name: Mostrar uso de CPU
+      debug:
+        var: cpu_usage.stdout_lines
+
+    - name: Verificar estado de servicios criticos
+      ansible.windows.win_service_info:
+        name: "{{ item }}"
+      loop: "{{ servicios_criticos }}"
+      register: servicios_estado
+
+    - name: Mostrar estado de servicios
+      debug:
+        msg: "Servicio {{ item.name }} esta {{ item.state }}"
+      loop: "{{ servicios_estado.results }}"
+
+    - name: Crear usuario ansible
+      ansible.windows.win_user:
+        name: "{{ usuario_ansible }}"
+        password: "P@ssw0rd123!"   # Cambiar por una contraseña segura
+        state: present
+        groups:
+          - Users
+
+    - name: Verificar actualizaciones disponibles
+      ansible.windows.win_updates:
+        category_names:
+          - CriticalUpdates
+          - SecurityUpdates
+        state: searched
+      register: updates
+
+    - name: Mostrar actualizaciones disponibles
+      debug:
+        var: updates.found_update_count
+
+    - name: Instalar actualizaciones si existen
+      ansible.windows.win_updates:
+        category_names:
+          - CriticalUpdates
+          - SecurityUpdates
+        state: installed
+        reboot: yes
+      when: updates.found_update_count > 0
