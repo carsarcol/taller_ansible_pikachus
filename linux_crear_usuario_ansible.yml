@@ -1,0 +1,22 @@
+---
+- name: Linux - Crear usuario ansible
+  hosts: os_linux
+  become: true
+  gather_facts: false
+
+  tasks:
+    - name: Crear usuario ansible
+      ansible.builtin.user:
+        name: ansible
+        state: present
+        shell: /bin/bash
+        groups: wheel
+        append: true
+
+    - name: Permitir sudo sin password al usuario ansible
+      ansible.builtin.copy:
+        dest: /etc/sudoers.d/ansible
+        content: "ansible ALL=(ALL) NOPASSWD:ALL\n"
+        owner: root
+        group: root
+        mode: "0440"
