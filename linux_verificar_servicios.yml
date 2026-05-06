@@ -1,0 +1,19 @@
+---
+- name: Linux - Verificar servicios
+  hosts: os_linux
+  become: true
+  gather_facts: true
+
+  vars:
+    servicios_linux:
+      - sshd
+      - crond
+
+  tasks:
+    - name: Obtener estado de servicios
+      ansible.builtin.service_facts:
+
+    - name: Mostrar estado de servicios requeridos
+      ansible.builtin.debug:
+        msg: "Servicio {{ item }} estado: {{ ansible_facts.services[item + '.service'].state | default('No encontrado') }}"
+      loop: "{{ servicios_linux }}"
